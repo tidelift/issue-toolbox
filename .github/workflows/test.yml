@@ -1,0 +1,29 @@
+name: 'build-test'
+on: # rebuild any PRs and main branch changes
+  pull_request:
+  push:
+    branches:
+      - main
+      - 'releases/*'
+
+jobs:
+  build: # make sure build/ci work properly
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: |
+          npm install
+      - run: |
+          npm run all
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TIDELIFT_TOKEN: ${{ secrets.TIDELIFT_TOKEN }}
+
+  sample_run: # make sure the action works on a clean machine without building
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          tidelift-token: ${{ secrets.TIDELIFT_TOKEN }}
