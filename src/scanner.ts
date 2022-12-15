@@ -1,6 +1,5 @@
 import {notBlank, unique} from './utils'
 import {Configuration} from './configuration'
-// import {Vulnerability} from './vulnerability'
 import {Issue} from './issue'
 import {
   createRecommendationsCommentIfNeeded,
@@ -153,7 +152,7 @@ export class Scanner {
     for (const vuln of vulnerabilities) {
       const issue_number = issuesData.find(({title, body}) =>
         this.find_cves([title, String(body)]).has(vuln)
-      )?.id
+      )?.number
 
       if (issue_number) mentions.set(vuln, issue_number)
     }
