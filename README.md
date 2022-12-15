@@ -60,6 +60,8 @@ Run the linter :heavy_check_mark:
 npm run lint
 ```
 
+GITHUB_TOKEN and TIDELIFT_TOKEN can be provided from the environment/`.env` file.
+
 ## Publish to a distribution branch
 
 Actions are run from GitHub repos so we will checkin the packed dist folder.
