@@ -4,7 +4,7 @@ import {TideliftClient} from '../src/tidelift_client'
 import {TideliftRecommendation} from '../src/tidelift_recommendation'
 
 const tidelift = new TideliftClient(
-  Configuration.defaults().tidelift_token || 'NO_TOKEN'
+  Configuration.defaults().tidelift_api_key || 'NO_TOKEN'
 )
 const fakeVuln = 'CVE-5555-1234'
 const realVuln = 'cve-2021-3807'

@@ -10,7 +10,7 @@ Generated from [actions/typescript-action](https://github.com/actions/typescript
 
 ## Usage
 
-Retrieve your Tidelift API token and add it as `TIDELIFT_TOKEN` to your project secrets.
+Retrieve your Tidelift user API key and add it as `TIDELIFT_API_KEY` to your project secrets.
 
 Add a workflow to your project.
 
@@ -29,7 +29,7 @@ jobs:
       - uses: macowie/issue_scanner_test@V1
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          tidelift-token: ${{ secrets.TIDELIFT_TOKEN }}
+          tidelift-api-key: ${{ secrets.TIDELIFT_API_KEY }}
 ```
 
 After testing you can [create a v1 tag](https://github.com/actions/toolkit/blob/master/docs/action-versioning.md) to reference the stable and latest V1 action
@@ -60,7 +60,7 @@ Run the linter :heavy_check_mark:
 npm run lint
 ```
 
-GITHUB_TOKEN and TIDELIFT_TOKEN can be provided from the environment/`.env` file.
+`GITHUB_TOKEN` and `TIDELIFT_API_KEY` can be provided from the environment or `.env` file.
 
 ## Publish to a distribution branch
 

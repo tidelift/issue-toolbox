@@ -13,12 +13,12 @@ describe('defaults', () => {
 
   test('defaults', async () => {
     let defaults = Configuration.defaults()
-    let subject = new Configuration({tidelift_token: 'foo'})
+    let subject = new Configuration({tidelift_api_key: 'foo'})
 
-    expect(subject.tidelift_token).toEqual('foo')
+    expect(subject.tidelift_api_key).toEqual('foo')
     for (const [key, default_value] of Object.entries(defaults)) {
       let expected = default_value
-      if (key === 'tidelift_token') expected = 'foo'
+      if (key === 'tidelift_api_key') expected = 'foo'
 
       expect(subject[key]).toEqual(expected)
     }

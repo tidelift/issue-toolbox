@@ -25,8 +25,8 @@ export class Scanner {
       options['github'] || new GithubClient(this.config.github_token)
 
     this.tidelift = options['tidelift']
-    if (this.config.tidelift_token) {
-      this.tidelift ||= new TideliftClient(this.config.tidelift_token)
+    if (this.config.tidelift_api_key) {
+      this.tidelift ||= new TideliftClient(this.config.tidelift_api_key)
     }
   }
 

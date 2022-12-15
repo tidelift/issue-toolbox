@@ -1,4 +1,4 @@
-name: Tidelift Scanner Example
+name: Tidelift Issue Toolbox Example Workflow
 on:
   issues:
     types: [opened, edited]
@@ -7,14 +7,10 @@ jobs:
   tidelift_scanner:
     runs-on: ubuntu-latest
     steps:
-      # - uses: macowie/issue_scanner_test@v1 # For external/real usage. Otherwise check out and local path:
+      # - uses: tidelift/issue-toolboxt@v1 # For external/real usage. Otherwise check out and local path:
       - uses: actions/checkout@v3
       - uses: ./
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          tidelift-token: ${{ secrets.TIDELIFT_TOKEN }}
-    # permissions:
-    #   actions: read
-    #   contents: read
-    #   issues: write
-    #   pull-requests: read
+          tidelift-api-key: ${{ secrets.TIDELIFT_API_KEY }}
+

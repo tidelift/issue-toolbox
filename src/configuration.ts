@@ -18,7 +18,7 @@ type TemplateSet = {
 
 export class Configuration {
   issue_number: possibleIssueNumber
-  tidelift_token?: string
+  tidelift_api_key?: string
   github_token: string
   ignore_if_assigned: boolean
   templates: TemplateSet
@@ -28,8 +28,8 @@ export class Configuration {
 
     this.issue_number = options['issue_number'] || defaults['issue_number']
     this.github_token = options['github_token'] || defaults['github_token']
-    this.tidelift_token =
-      options['tidelift_token'] || defaults['tidelift_token']
+    this.tidelift_api_key =
+      options['tidelift_api_key'] || defaults['tidelift_api_key']
     this.ignore_if_assigned =
       options['ignore_if_assigned'] || defaults['ignore_if_assigned']
     this.templates = options['templates'] || defaults['templates']
@@ -44,7 +44,7 @@ export class Configuration {
     return {
       issue_number: getInput('issue-number'),
       ignore_if_assigned: isTruthy(getInput('ignore-if-assigned')),
-      tidelift_token: getInput('tidelift-token') || process.env.TIDELIFT_TOKEN,
+      tidelift_api_key: getInput('tidelift-token') || process.env.TIDELIFT_TOKEN,
       github_token,
       templates: {
         vuln_label: formatVulnerabilityLabel,

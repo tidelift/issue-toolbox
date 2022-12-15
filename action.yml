@@ -1,4 +1,4 @@
-name: Tidelift Issue Scanner
+name: Tidelift Issue Toolbox
 description: Checks issues against prior reports
 author: Tidelift
 inputs:
@@ -6,7 +6,7 @@ inputs:
     description: GitHub token
     required: false
     default: ${{ github.token }}
-  tidelift-token:
+  tidelift-api-key:
     description: Tidelift API access
     required: false
   issue-number:

@@ -16,7 +16,7 @@ async function run(): Promise<void> {
     } else if (error instanceof Error) {
       setFailed(error)
     } else {
-      setFailed(String(error))
+      setFailed('Unknown error occured')
     }
   }
 }

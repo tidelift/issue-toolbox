@@ -4,15 +4,15 @@ import {concurrently} from './utils'
 import {VulnerabilityId} from './scanner'
 
 export class TideliftClient {
-  token: string
+  api_key: string
   client
 
-  constructor(token: string) {
-    this.token = token
+  constructor(api_key: string) {
+    this.api_key = api_key
     this.client = axios.create({
       baseURL: 'https://api.tidelift.com/external-api/v1',
       headers: {
-        Authorization: `Bearer ${token}`
+        Authorization: `Bearer ${api_key}`
       },
       validateStatus: status =>
         (status >= 200 && status < 300) || status === 404

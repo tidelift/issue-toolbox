@@ -17,7 +17,7 @@ jobs:
           npm run all
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TIDELIFT_TOKEN: ${{ secrets.TIDELIFT_TOKEN }}
+          TIDELIFT_API_KEY: ${{ secrets.TIDELIFT_API_KEY }}
 
   sample_run: # make sure the action works on a clean machine without building
     runs-on: ubuntu-latest
@@ -26,4 +26,4 @@ jobs:
       - uses: ./
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          tidelift-token: ${{ secrets.TIDELIFT_TOKEN }}
+          tidelift-api-key: ${{ secrets.TIDELIFT_API_KEY }}
