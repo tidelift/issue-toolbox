@@ -95,8 +95,8 @@ class Configuration {
         const defaults = Configuration.defaults();
         this.issue_number = options['issue_number'] || defaults['issue_number'];
         this.github_token = options['github_token'] || defaults['github_token'];
-        this.tidelift_token =
-            options['tidelift_token'] || defaults['tidelift_token'];
+        this.tidelift_api_key =
+            options['tidelift_api_key'] || defaults['tidelift_api_key'];
         this.ignore_if_assigned =
             options['ignore_if_assigned'] || defaults['ignore_if_assigned'];
         this.templates = options['templates'] || defaults['templates'];
@@ -109,7 +109,7 @@ class Configuration {
         return {
             issue_number: (0, core_1.getInput)('issue-number'),
             ignore_if_assigned: isTruthy((0, core_1.getInput)('ignore-if-assigned')),
-            tidelift_token: (0, core_1.getInput)('tidelift-token') || process.env.TIDELIFT_TOKEN,
+            tidelift_api_key: (0, core_1.getInput)('tidelift-api-key') || process.env.TIDELIFT_API_KEY,
             github_token,
             templates: {
                 vuln_label: formatVulnerabilityLabel,
@@ -366,7 +366,7 @@ function run() {
                 (0, core_1.setFailed)(error);
             }
             else {
-                (0, core_1.setFailed)(String(error));
+                (0, core_1.setFailed)('Unknown error occured');
             }
         }
     });
@@ -411,8 +411,8 @@ class Scanner {
         this.github =
             options['github'] || new github_client_1.GithubClient(this.config.github_token);
         this.tidelift = options['tidelift'];
-        if (this.config.tidelift_token) {
-            this.tidelift || (this.tidelift = new tidelift_client_1.TideliftClient(this.config.tidelift_token));
+        if (this.config.tidelift_api_key) {
+            this.tidelift || (this.tidelift = new tidelift_client_1.TideliftClient(this.config.tidelift_api_key));
         }
     }
     perform(issue) {
@@ -571,12 +571,12 @@ const axios_1 = __importDefault(__nccwpck_require__(8757));
 const tidelift_recommendation_1 = __nccwpck_require__(6190);
 const utils_1 = __nccwpck_require__(918);
 class TideliftClient {
-    constructor(token) {
-        this.token = token;
+    constructor(api_key) {
+        this.api_key = api_key;
         this.client = axios_1.default.create({
             baseURL: 'https://api.tidelift.com/external-api/v1',
             headers: {
-                Authorization: `Bearer ${token}`
+                Authorization: `Bearer ${api_key}`
             },
             validateStatus: status => (status >= 200 && status < 300) || status === 404
         });
