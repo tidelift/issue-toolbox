@@ -44,7 +44,8 @@ export class Configuration {
     return {
       issue_number: getInput('issue-number'),
       ignore_if_assigned: isTruthy(getInput('ignore-if-assigned')),
-      tidelift_api_key: getInput('tidelift-token') || process.env.TIDELIFT_TOKEN,
+      tidelift_api_key:
+        getInput('tidelift-api-key') || process.env.TIDELIFT_API_KEY,
       github_token,
       templates: {
         vuln_label: formatVulnerabilityLabel,
