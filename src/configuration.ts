@@ -65,30 +65,36 @@ function formatHasRecommenationLabel(): string {
   return `:green_circle: has-recommendation`
 }
 
+function formatPossibleDuplicateLabel(): string {
+  return `:large_blue_circle: possible-duplicate`
+}
+
+//TODO: Add unaffected releases when available from API
 function formatRecommendationComment(
   recommendation: TideliftRecommendation
 ): string {
-  return `:wave: It looks like you are talking about ${recommendation.vulnerability}. I have more information to help you handle this CVE.
+  return `:wave: It looks like you are talking about *${recommendation.vulnerability}*.  The maintainer has provided more information to help you handle this CVE.
 
-Is this a legit issue with this project? ${recommendation.real_issue}
+> Is this a real issue with this project? *${recommendation.real_issue}*
+
 ${recommendation.false_positive_reason}
 
-How likely are you impacted (out of 10)? ${recommendation.impact_score}
+> How likely are you impacted (out of 10)? *${recommendation.impact_score}*
+
 ${recommendation.impact_description}
 
-Is there a workaround available? ${recommendation.workaround_available}
-${recommendation.workaround_description}`
-}
+> Is there a workaround available? *${recommendation.workaround_available}*
 
-function formatPossibleDuplicateLabel(): string {
-  return `:large_blue_circle: possible-duplicate`
+${recommendation.workaround_description}
+
+Data provided by [Tidelift](https://tidelift.com), in partnership with the maintainer of this project`
 }
 
 function formatPossibleDuplicateComment(
   vuln: string,
   issue_number: string | number
 ): string {
-  return `An issue referencing ${vuln} was first filed in #${issue_number}. If your issue is different from this, please let us know.`
+  return `An issue referencing *${vuln}* was first filed in #${issue_number}. If your issue is different from this, please let us know.`
 }
 
 function isTruthy(val): boolean {
