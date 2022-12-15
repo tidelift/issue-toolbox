@@ -128,23 +128,29 @@ function formatVulnerabilityLabel(vuln_id) {
 function formatHasRecommenationLabel() {
     return `:green_circle: has-recommendation`;
 }
-function formatRecommendationComment(recommendation) {
-    return `:wave: It looks like you are talking about ${recommendation.vulnerability}. I have more information to help you handle this CVE.
-
-Is this a legit issue with this project? ${recommendation.real_issue}
-${recommendation.false_positive_reason}
-
-How likely are you impacted (out of 10)? ${recommendation.impact_score}
-${recommendation.impact_description}
-
-Is there a workaround available? ${recommendation.workaround_available}
-${recommendation.workaround_description}`;
-}
 function formatPossibleDuplicateLabel() {
     return `:large_blue_circle: possible-duplicate`;
 }
+//TODO: Add unaffected releases when available from API
+function formatRecommendationComment(recommendation) {
+    return `:wave: It looks like you are talking about *${recommendation.vulnerability}*.  The maintainer has provided more information to help you handle this CVE.
+
+> Is this a real issue with this project? *${recommendation.real_issue}*
+
+${recommendation.false_positive_reason}
+
+> How likely are you impacted (out of 10)? *${recommendation.impact_score}*
+
+${recommendation.impact_description}
+
+> Is there a workaround available? *${recommendation.workaround_available}*
+
+${recommendation.workaround_description}
+
+Data provided by [Tidelift](https://tidelift.com), in partnership with the maintainer of this project`;
+}
 function formatPossibleDuplicateComment(vuln, issue_number) {
-    return `An issue referencing ${vuln} was first filed in #${issue_number}. If your issue is different from this, please let us know.`;
+    return `An issue referencing *${vuln}* was first filed in #${issue_number}. If your issue is different from this, please let us know.`;
 }
 function isTruthy(val) {
     return ['true', 't', 'yes'].includes(String(val).toLowerCase());
@@ -510,7 +516,7 @@ class Scanner {
             }
             const mentions = new Map();
             for (const vuln of vulnerabilities) {
-                const issue_number = (_b = issuesData.find(({ title, body }) => this.find_cves([title, String(body)]).has(vuln))) === null || _b === void 0 ? void 0 : _b.id;
+                const issue_number = (_b = issuesData.find(({ title, body }) => this.find_cves([title, String(body)]).has(vuln))) === null || _b === void 0 ? void 0 : _b.number;
                 if (issue_number)
                     mentions.set(vuln, issue_number);
             }
