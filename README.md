@@ -1,10 +1,12 @@
-# Tidelift Issue Scanner
+# Tidelift Issue Toolbox
 
-Does helpful things when issues are opened
+[![build status](https://github.com/tidelift/issue-toolbox/workflows/build-test/badge.svg)](https://github.com/tidelift/issue-toolbox/actions)
 
-<p align="center">
-  <a href="https://github.com/macowie/issue_scanner_test/actions"><img alt="build status" src="https://github.com/macowie/issue_scanner_test/workflows/build-test/badge.svg"></a>
-</p>
+This github action has been created to help maintainers organize and address issues. This project is still under beta, and we welcome any feedback to improve issue management.
+
+Maintainers have reported responding to multiple issues regarding the same disclosed security issue, and these actions aim to reduce this workload. Maintainers who have partnered with Tidelift are responding to Common Vulnerabilities and Exposures (CVE) with workarounds and when users are affected.
+
+Adding this action will allow Tidelift to automatically respond to an issue referencing a particular CVE or NPM audit alert with this previously provided data. This action will also label the issue with the CVE identifier for users to find similar topics, and link users referencing the same vulnerability to one ticket, to highlight potential duplicates.
 
 Generated from [actions/typescript-action](https://github.com/actions/typescript-action)
 
