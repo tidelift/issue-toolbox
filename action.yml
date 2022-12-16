@@ -1,0 +1,21 @@
+name: Tidelift Issue Toolbox
+description: Checks issues against prior reports
+author: Tidelift
+inputs:
+  repo-token:
+    description: GitHub token
+    required: false
+    default: ${{ github.token }}
+  tidelift-api-key:
+    description: Tidelift API access
+    required: false
+  issue-number:
+    description: Manually specify issue to scan
+    required: false
+  ignore-if-assigned:
+    description: Skip issues that have already been assigned
+    required: false
+    default: "false"
+runs:
+  using: 'node16'
+  main: 'dist/index.js'

@@ -1,0 +1,16 @@
+name: Tidelift Issue Toolbox Example Workflow
+on:
+  issues:
+    types: [opened, edited]
+
+jobs:
+  tidelift_scanner:
+    runs-on: ubuntu-latest
+    steps:
+      # - uses: tidelift/issue-toolboxt@v1 # For external/real usage. Otherwise check out and local path:
+      - uses: actions/checkout@v3
+      - uses: ./
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          tidelift-api-key: ${{ secrets.TIDELIFT_API_KEY }}
+
