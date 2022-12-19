@@ -4,8 +4,8 @@ import {Configuration} from '../src/configuration'
 import {Issue} from '../src/issue'
 
 const scanner = new Scanner()
-scanner.github.addComment = jest.fn()
-scanner.github.addLabels = jest.fn()
+scanner.github.add_comment = jest.fn()
+scanner.github.add_labels = jest.fn()
 
 describe('Scanner', () => {
   test('has config', () => {

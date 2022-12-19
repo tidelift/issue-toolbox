@@ -1,16 +1,16 @@
 import {getOctokit} from '@actions/github'
-import {issueContext} from './issue'
+import {IssueContext} from './issue'
 
 import type {GitHub} from '@actions/github/lib/utils'
 import type {RestEndpointMethodTypes} from '@octokit/plugin-rest-endpoint-methods'
 import type {GraphQlQueryResponseData} from '@octokit/graphql'
 
-export type issueData =
+export type IssueData =
   RestEndpointMethodTypes['issues']['get']['response']['data']
-export type commentData =
+export type CommentData =
   RestEndpointMethodTypes['issues']['getComment']['response']['data']
-export type commentsData =
-  RestEndpointMethodTypes['issues']['listComments']['response']['data']
+// export type commentsData =
+//   RestEndpointMethodTypes['issues']['listComments']['response']['data']
 
 export class GithubClient {
   octokit: InstanceType<typeof GitHub>
@@ -23,7 +23,8 @@ export class GithubClient {
     return this.octokit.graphql({query, ...options})
   }
 
-  async getCveForGhsa(ghsa_id: string): Promise<string | undefined> {
+  async translate_ghsa_to_cve(ghsa_id: string): Promise<string | undefined> {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     const {securityAdvisory} = await this.graphql({
       query: `query advisoryIds($ghsa_id:String!) {
         securityAdvisory(ghsaId: $ghsa_id) {
@@ -39,11 +40,11 @@ export class GithubClient {
     return securityAdvisory.identifiers.find(i => i['type'] === 'CVE')?.value
   }
 
-  async getIssue({
+  async get_issue({
     repo,
     owner,
     issue_number
-  }: issueContext): Promise<issueData> {
+  }: IssueContext): Promise<IssueData> {
     const {data} = await this.octokit.rest.issues.get({
       repo,
       owner,
@@ -53,13 +54,13 @@ export class GithubClient {
     return data
   }
 
-  async listIssues({
+  async list_issues({
     repo,
     owner
   }: {
     repo: string
     owner: string
-  }): Promise<issueData[]> {
+  }): Promise<IssueData[]> {
     const {data} = await this.octokit.rest.issues.listForRepo({
       repo,
       owner,
@@ -69,11 +70,11 @@ export class GithubClient {
     return data
   }
 
-  async listComments({
+  async list_comments({
     repo,
     owner,
     issue_number
-  }: issueContext): Promise<commentsData> {
+  }: IssueContext): Promise<CommentData[]> {
     const {data} = await this.octokit.rest.issues.listComments({
       repo,
       owner,
@@ -83,8 +84,8 @@ export class GithubClient {
     return data
   }
 
-  async addComment(
-    {repo, owner, issue_number}: issueContext,
+  async add_comment(
+    {repo, owner, issue_number}: IssueContext,
     body: string
   ): Promise<
     RestEndpointMethodTypes['issues']['createComment']['response']['data']
@@ -99,8 +100,8 @@ export class GithubClient {
     return data
   }
 
-  async addLabels(
-    {repo, owner, issue_number}: issueContext,
+  async add_labels(
+    {repo, owner, issue_number}: IssueContext,
     labels: string[]
   ): Promise<
     RestEndpointMethodTypes['issues']['addLabels']['response']['data']

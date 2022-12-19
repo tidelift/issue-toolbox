@@ -3,7 +3,7 @@ export function notBlank<TValue>(
 ): value is TValue {
   if (value === null || value === undefined) return false
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const testDummy: TValue = value
+  const test_dummy: TValue = value
   return true
 }
 

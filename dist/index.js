@@ -19,25 +19,25 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.createDuplicatesCommentIfNeeded = exports.createRecommendationsCommentIfNeeded = void 0;
 function createRecommendationsCommentIfNeeded(issue, recs, github, template) {
     return __awaiter(this, void 0, void 0, function* () {
-        const comments = yield github.listComments(issue);
+        const comments = yield github.list_comments(issue);
         if (!comments)
             return;
-        const botComments = comments.filter(isBotComment);
-        const unmentioned_recs = [...recs].filter(rec => !botComments.some(commentIncludesText, rec.vulnerability));
+        const bot_comments = comments.filter(isBotComment);
+        const unmentioned_recs = [...recs].filter(rec => !bot_comments.some(commentIncludesText, rec.vulnerability));
         if (unmentioned_recs.length > 0)
-            return github.addComment(issue, unmentioned_recs.map(rec => template(rec)).join('\n---\n'));
+            return github.add_comment(issue, unmentioned_recs.map(rec => template(rec)).join('\n---\n'));
     });
 }
 exports.createRecommendationsCommentIfNeeded = createRecommendationsCommentIfNeeded;
 function createDuplicatesCommentIfNeeded(issue, duplicates, github, template) {
     return __awaiter(this, void 0, void 0, function* () {
-        const comments = yield github.listComments(issue);
+        const comments = yield github.list_comments(issue);
         if (!comments)
             return;
-        const botComments = comments.filter(isBotComment);
-        const unmentioned_dupes = [...duplicates].filter(([vuln]) => !botComments.some(commentIncludesText, vuln));
+        const bot_comments = comments.filter(isBotComment);
+        const unmentioned_dupes = [...duplicates].filter(([vuln]) => !bot_comments.some(commentIncludesText, vuln));
         if (unmentioned_dupes.length > 0)
-            return github.addComment(issue, unmentioned_dupes
+            return github.add_comment(issue, unmentioned_dupes
                 .map(([vuln, prior_issue]) => template(vuln, prior_issue))
                 .join('\n---\n'));
     });
@@ -187,6 +187,8 @@ var __rest = (this && this.__rest) || function (s, e) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.GithubClient = void 0;
 const github_1 = __nccwpck_require__(5438);
+// export type commentsData =
+//   RestEndpointMethodTypes['issues']['listComments']['response']['data']
 class GithubClient {
     constructor(token) {
         this.octokit = (0, github_1.getOctokit)(token);
@@ -197,9 +199,10 @@ class GithubClient {
             return this.octokit.graphql(Object.assign({ query }, options));
         });
     }
-    getCveForGhsa(ghsa_id) {
+    translate_ghsa_to_cve(ghsa_id) {
         var _a;
         return __awaiter(this, void 0, void 0, function* () {
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             const { securityAdvisory } = yield this.graphql({
                 query: `query advisoryIds($ghsa_id:String!) {
         securityAdvisory(ghsaId: $ghsa_id) {
@@ -214,7 +217,7 @@ class GithubClient {
             return (_a = securityAdvisory.identifiers.find(i => i['type'] === 'CVE')) === null || _a === void 0 ? void 0 : _a.value;
         });
     }
-    getIssue({ repo, owner, issue_number }) {
+    get_issue({ repo, owner, issue_number }) {
         return __awaiter(this, void 0, void 0, function* () {
             const { data } = yield this.octokit.rest.issues.get({
                 repo,
@@ -224,7 +227,7 @@ class GithubClient {
             return data;
         });
     }
-    listIssues({ repo, owner }) {
+    list_issues({ repo, owner }) {
         return __awaiter(this, void 0, void 0, function* () {
             const { data } = yield this.octokit.rest.issues.listForRepo({
                 repo,
@@ -234,7 +237,7 @@ class GithubClient {
             return data;
         });
     }
-    listComments({ repo, owner, issue_number }) {
+    list_comments({ repo, owner, issue_number }) {
         return __awaiter(this, void 0, void 0, function* () {
             const { data } = yield this.octokit.rest.issues.listComments({
                 repo,
@@ -244,7 +247,7 @@ class GithubClient {
             return data;
         });
     }
-    addComment({ repo, owner, issue_number }, body) {
+    add_comment({ repo, owner, issue_number }, body) {
         return __awaiter(this, void 0, void 0, function* () {
             const { data } = yield this.octokit.rest.issues.createComment({
                 repo,
@@ -255,7 +258,7 @@ class GithubClient {
             return data;
         });
     }
-    addLabels({ repo, owner, issue_number }, labels) {
+    add_labels({ repo, owner, issue_number }, labels) {
         return __awaiter(this, void 0, void 0, function* () {
             const { data } = yield this.octokit.rest.issues.addLabels({
                 repo,
@@ -291,22 +294,26 @@ class Issue {
         this.data = data;
     }
     get context() {
-        return { owner: this.owner, repo: this.repo, issue_number: this.issue_number };
+        return {
+            owner: this.owner,
+            repo: this.repo,
+            issue_number: this.issue_number
+        };
     }
-    get hasAssignees() {
+    get has_assignees() {
         var _a;
         return !!((_a = this.data) === null || _a === void 0 ? void 0 : _a.assignees) && this.data.assignees.length > 0;
     }
-    get searchableText() {
-        const searchableFields = ['title', 'body'];
-        return searchableFields
+    get searchable_text() {
+        const searchable_fields = ['title', 'body'];
+        return searchable_fields
             .map(field => this.data && this.data[field])
             .filter(utils_1.notBlank);
     }
 }
 exports.Issue = Issue;
-function findCurrentIssue(githubContext, issue_number) {
-    return new Issue(findIssueContext(githubContext, issue_number));
+function findCurrentIssue(github_cxt, issue_number) {
+    return new Issue(findIssueContext(github_cxt, issue_number));
 }
 exports.findCurrentIssue = findCurrentIssue;
 function findIssueContext(context, issue_number) {
@@ -320,11 +327,11 @@ function findIssueContext(context, issue_number) {
 }
 function findIssueNumber(context, issue_number) {
     var _a, _b, _c, _d;
-    const possibleNumber = issue_number ||
+    const possible_number = issue_number ||
         ((_b = (_a = context.payload) === null || _a === void 0 ? void 0 : _a.issue) === null || _b === void 0 ? void 0 : _b.number) ||
         ((_d = (_c = context.payload) === null || _c === void 0 ? void 0 : _c.pull_request) === null || _d === void 0 ? void 0 : _d.number);
-    if (possibleNumber)
-        return Number(possibleNumber);
+    if (possible_number)
+        return Number(possible_number);
     throw new IssueNotFoundError();
 }
 
@@ -419,30 +426,30 @@ class Scanner {
         var _a;
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                issue.data = yield this.github.getIssue(issue);
+                issue.data = yield this.github.get_issue(issue);
             }
             catch (_b) {
                 return Scanner.statuses.no_issue_data(issue.context);
             }
-            if (this.config.ignore_if_assigned && issue.hasAssignees) {
+            if (this.config.ignore_if_assigned && issue.has_assignees) {
                 return Scanner.statuses.ignored_assigned();
             }
-            const vulnerabilities = yield this.find_all(issue.searchableText);
+            const vulnerabilities = yield this.find_all(issue.searchable_text);
             const recommendations = yield this.find_recommendations(vulnerabilities);
             const duplicates = yield this.check_duplicates(issue, vulnerabilities);
             if (vulnerabilities.size === 0) {
                 return Scanner.statuses.no_vulnerabilities();
             }
-            const labelsToAdd = [...vulnerabilities.values()].map(vuln => this.config.templates.vuln_label(vuln));
+            const labels_to_add = [...vulnerabilities.values()].map(vuln => this.config.templates.vuln_label(vuln));
             if (recommendations.length > 0) {
-                labelsToAdd.push(this.config.templates.has_recommendation_label());
+                labels_to_add.push(this.config.templates.has_recommendation_label());
                 (0, comment_1.createRecommendationsCommentIfNeeded)(issue, recommendations, this.github, this.config.templates.recommendation_comment);
             }
             if (duplicates.size > 0) {
-                labelsToAdd.push(this.config.templates.possible_duplicate_label());
+                labels_to_add.push(this.config.templates.possible_duplicate_label());
                 (0, comment_1.createDuplicatesCommentIfNeeded)(issue, duplicates, this.github, this.config.templates.possible_duplicate_comment);
             }
-            yield ((_a = this.github) === null || _a === void 0 ? void 0 : _a.addLabels(issue, labelsToAdd));
+            yield ((_a = this.github) === null || _a === void 0 ? void 0 : _a.add_labels(issue, labels_to_add));
             return Scanner.statuses.success(vulnerabilities, recommendations);
         });
     }
@@ -471,7 +478,7 @@ class Scanner {
                     _d = false;
                     try {
                         const ghsa_id = _c;
-                        const possible_cve = yield this.github.getCveForGhsa(ghsa_id);
+                        const possible_cve = yield this.github.translate_ghsa_to_cve(ghsa_id);
                         if (possible_cve) {
                             vulnerabilities.add(possible_cve);
                         }
@@ -497,7 +504,7 @@ class Scanner {
                 (0, core_1.info)('No Tidelift client for lookup');
                 return [];
             }
-            return yield this.tidelift.fetchRecommendations([
+            return yield this.tidelift.fetch_recommendations([
                 ...vulnerabilities.values()
             ]);
         });
@@ -509,14 +516,14 @@ class Scanner {
                 (0, core_1.info)('No github client for lookup');
                 return new Map();
             }
-            const issuesData = yield ((_a = this.github) === null || _a === void 0 ? void 0 : _a.listIssues({ repo, owner }));
-            if (!issuesData) {
+            const issues_data = yield ((_a = this.github) === null || _a === void 0 ? void 0 : _a.list_issues({ repo, owner }));
+            if (!issues_data) {
                 (0, core_1.info)('Could not check other issues on repository');
                 return new Map();
             }
             const mentions = new Map();
             for (const vuln of vulnerabilities) {
-                const issue_number = (_b = issuesData.find(({ title, body }) => this.find_cves([title, String(body)]).has(vuln))) === null || _b === void 0 ? void 0 : _b.number;
+                const issue_number = (_b = issues_data.find(({ title, body }) => this.find_cves([title, String(body)]).has(vuln))) === null || _b === void 0 ? void 0 : _b.number;
                 if (issue_number)
                     mentions.set(vuln, issue_number);
             }
@@ -573,6 +580,7 @@ const utils_1 = __nccwpck_require__(918);
 class TideliftClient {
     constructor(api_key) {
         this.api_key = api_key;
+        /* eslint-disable @typescript-eslint/naming-convention */ //
         this.client = axios_1.default.create({
             baseURL: 'https://api.tidelift.com/external-api/v1',
             headers: {
@@ -580,8 +588,9 @@ class TideliftClient {
             },
             validateStatus: status => (status >= 200 && status < 300) || status === 404
         });
+        /* eslint-enable @typescript-eslint/naming-convention */ //
     }
-    fetchRecommendation(vuln) {
+    fetch_recommendation(vuln) {
         return __awaiter(this, void 0, void 0, function* () {
             const response = yield this.client.get(`/vulnerability/${vuln}/recommendation`);
             if (response.status === 404) {
@@ -590,9 +599,9 @@ class TideliftClient {
             return new tidelift_recommendation_1.TideliftRecommendation(vuln, response.data);
         });
     }
-    fetchRecommendations(vulns) {
+    fetch_recommendations(vulns) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield (0, utils_1.concurrently)(vulns, (vuln) => __awaiter(this, void 0, void 0, function* () { return this.fetchRecommendation(vuln); }));
+            return yield (0, utils_1.concurrently)(vulns, (vuln) => __awaiter(this, void 0, void 0, function* () { return this.fetch_recommendation(vuln); }));
         });
     }
 }
@@ -652,7 +661,7 @@ function notBlank(value) {
     if (value === null || value === undefined)
         return false;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const testDummy = value;
+    const test_dummy = value;
     return true;
 }
 exports.notBlank = notBlank;

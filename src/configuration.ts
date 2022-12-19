@@ -1,7 +1,7 @@
 import {getInput} from '@actions/core'
 import {TideliftRecommendation} from './tidelift_recommendation'
 import * as dotenv from 'dotenv'
-import {possibleIssueNumber} from './issue'
+import {PossibleIssueNumber} from './issue'
 import {VulnerabilityId} from './scanner'
 dotenv.config()
 
@@ -17,7 +17,7 @@ type TemplateSet = {
 }
 
 export class Configuration {
-  issue_number: possibleIssueNumber
+  issue_number: PossibleIssueNumber
   tidelift_api_key?: string
   github_token: string
   ignore_if_assigned: boolean

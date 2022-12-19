@@ -42,28 +42,28 @@ export class Scanner {
 
   async perform(issue: Issue): Promise<string> {
     try {
-      issue.data = await this.github.getIssue(issue)
+      issue.data = await this.github.get_issue(issue)
     } catch {
       return Scanner.statuses.no_issue_data(issue.context)
     }
 
-    if (this.config.ignore_if_assigned && issue.hasAssignees) {
+    if (this.config.ignore_if_assigned && issue.has_assignees) {
       return Scanner.statuses.ignored_assigned()
     }
 
-    const vulnerabilities = await this.find_all(issue.searchableText)
+    const vulnerabilities = await this.find_all(issue.searchable_text)
     const recommendations = await this.find_recommendations(vulnerabilities)
     const duplicates = await this.check_duplicates(issue, vulnerabilities)
 
     if (vulnerabilities.size === 0) {
       return Scanner.statuses.no_vulnerabilities()
     }
-    const labelsToAdd = [...vulnerabilities.values()].map(vuln =>
+    const labels_to_add = [...vulnerabilities.values()].map(vuln =>
       this.config.templates.vuln_label(vuln)
     )
 
     if (recommendations.length > 0) {
-      labelsToAdd.push(this.config.templates.has_recommendation_label())
+      labels_to_add.push(this.config.templates.has_recommendation_label())
 
       createRecommendationsCommentIfNeeded(
         issue,
@@ -74,7 +74,7 @@ export class Scanner {
     }
 
     if (duplicates.size > 0) {
-      labelsToAdd.push(this.config.templates.possible_duplicate_label())
+      labels_to_add.push(this.config.templates.possible_duplicate_label())
 
       createDuplicatesCommentIfNeeded(
         issue,
@@ -84,7 +84,7 @@ export class Scanner {
       )
     }
 
-    await this.github?.addLabels(issue, labelsToAdd)
+    await this.github?.add_labels(issue, labels_to_add)
 
     return Scanner.statuses.success(vulnerabilities, recommendations)
   }
@@ -109,7 +109,7 @@ export class Scanner {
     const vulnerabilities = new Set<VulnerabilityId>()
 
     for await (const ghsa_id of fields.flatMap(scanGhsa).filter(unique)) {
-      const possible_cve = await this.github.getCveForGhsa(ghsa_id)
+      const possible_cve = await this.github.translate_ghsa_to_cve(ghsa_id)
 
       if (possible_cve) {
         vulnerabilities.add(possible_cve)
@@ -127,7 +127,7 @@ export class Scanner {
       return []
     }
 
-    return await this.tidelift.fetchRecommendations([
+    return await this.tidelift.fetch_recommendations([
       ...vulnerabilities.values()
     ])
   }
@@ -141,16 +141,16 @@ export class Scanner {
       return new Map()
     }
 
-    const issuesData = await this.github?.listIssues({repo, owner})
+    const issues_data = await this.github?.list_issues({repo, owner})
 
-    if (!issuesData) {
+    if (!issues_data) {
       info('Could not check other issues on repository')
       return new Map()
     }
 
     const mentions = new Map()
     for (const vuln of vulnerabilities) {
-      const issue_number = issuesData.find(({title, body}) =>
+      const issue_number = issues_data.find(({title, body}) =>
         this.find_cves([title, String(body)]).has(vuln)
       )?.number
 

@@ -9,6 +9,8 @@ export class TideliftClient {
 
   constructor(api_key: string) {
     this.api_key = api_key
+
+    /* eslint-disable @typescript-eslint/naming-convention */ //
     this.client = axios.create({
       baseURL: 'https://api.tidelift.com/external-api/v1',
       headers: {
@@ -17,9 +19,10 @@ export class TideliftClient {
       validateStatus: status =>
         (status >= 200 && status < 300) || status === 404
     })
+    /* eslint-enable @typescript-eslint/naming-convention */ //
   }
 
-  async fetchRecommendation(
+  async fetch_recommendation(
     vuln: VulnerabilityId
   ): Promise<TideliftRecommendation | undefined> {
     const response = await this.client.get(
@@ -33,11 +36,11 @@ export class TideliftClient {
     return new TideliftRecommendation(vuln, response.data)
   }
 
-  async fetchRecommendations(
+  async fetch_recommendations(
     vulns: VulnerabilityId[]
   ): Promise<TideliftRecommendation[]> {
     return await concurrently(vulns, async vuln =>
-      this.fetchRecommendation(vuln)
+      this.fetch_recommendation(vuln)
     )
   }
 }

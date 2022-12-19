@@ -38,6 +38,14 @@
     "@typescript-eslint/no-inferrable-types": "error",
     "@typescript-eslint/no-misused-new": "error",
     "@typescript-eslint/no-namespace": "error",
+    "@typescript-eslint/naming-convention": [
+      "error",
+      { "selector": "default", "format": ["camelCase"] },
+      { "selector": "variableLike", "format": ["snake_case"] },
+      { "selector": "function", "format": ["camelCase"]},
+      { "selector": "memberLike", "format": ["snake_case"] },
+      { "selector": "typeLike", "format": ["PascalCase"] }
+    ],
     "@typescript-eslint/no-non-null-assertion": "warn",
     "@typescript-eslint/no-unnecessary-qualifier": "error",
     "@typescript-eslint/no-unnecessary-type-assertion": "error",

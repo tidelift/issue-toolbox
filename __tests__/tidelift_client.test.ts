@@ -9,21 +9,21 @@ const tidelift = new TideliftClient(
 const fakeVuln = 'CVE-5555-1234'
 const realVuln = 'cve-2021-3807'
 
-describe('fetchRecommendation', () => {
+describe('fetch_recommendation', () => {
   test('when not found, returns nothing', async () => {
-    expect(await tidelift.fetchRecommendation(fakeVuln)).toBe(undefined)
+    expect(await tidelift.fetch_recommendation(fakeVuln)).toBe(undefined)
   })
 
   test('when found, returns shiny recommendation', async () => {
-    expect(await tidelift.fetchRecommendation(realVuln)).toBeInstanceOf(
+    expect(await tidelift.fetch_recommendation(realVuln)).toBeInstanceOf(
       TideliftRecommendation
     )
   })
 })
 
-describe('fetchRecommendations', () => {
+describe('fetch_recommendations', () => {
   test('compacted array', async () => {
     const vulns = [realVuln, fakeVuln]
-    expect(await tidelift.fetchRecommendations(vulns)).toHaveLength(1)
+    expect(await tidelift.fetch_recommendations(vulns)).toHaveLength(1)
   })
 })
