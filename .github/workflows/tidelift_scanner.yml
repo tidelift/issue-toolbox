@@ -13,4 +13,3 @@ jobs:
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           tidelift-api-key: ${{ secrets.TIDELIFT_API_KEY }}
-

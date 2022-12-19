@@ -38,7 +38,7 @@ After testing you can [create a v1 tag](https://github.com/actions/toolkit/blob/
 
 ## Developing
 
-Install the dependencies  
+Install the dependencies
 
 ```bash
 npm install
@@ -50,13 +50,13 @@ Run full lint, test, build
 npm run all
 ```
 
-Run the tests :heavy_check_mark:  
+Run the tests :heavy_check_mark:
 
 ```bash
 npm test
 ```
 
-Run the linter :heavy_check_mark:  
+Run the linter :heavy_check_mark:
 
 ```bash
 npm run lint

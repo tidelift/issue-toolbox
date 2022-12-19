@@ -28,7 +28,11 @@ describe('Scanner', () => {
   })
 
   test('perform success', async () => {
-    let issue = new Issue({repo: 'codeql', owner: 'github', issue_number: 8707})
+    let issue = new Issue({
+      repo: 'codeql',
+      owner: 'github',
+      issue_number: 8707
+    })
     let subject = await scanner.perform(issue)
 
     expect(subject).toContain('CVE-2021-43297')

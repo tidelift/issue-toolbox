@@ -30,7 +30,11 @@ export class Issue implements issueContext {
   }
 
   get context(): issueContext {
-    return {owner: this.owner, repo: this.repo, issue_number: this.issue_number}
+    return {
+      owner: this.owner,
+      repo: this.repo,
+      issue_number: this.issue_number
+    }
   }
 
   get hasAssignees(): boolean {

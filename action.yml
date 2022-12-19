@@ -15,7 +15,7 @@ inputs:
   ignore-if-assigned:
     description: Skip issues that have already been assigned
     required: false
-    default: "false"
+    default: 'false'
 runs:
   using: 'node16'
   main: 'dist/index.js'
