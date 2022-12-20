@@ -7,7 +7,7 @@ import {
 } from './comment'
 import {TideliftClient} from './tidelift_client'
 import {GithubClient} from './github_client'
-import {info, warning} from '@actions/core'
+import {warning} from '@actions/core'
 import {TideliftRecommendation} from './tidelift_recommendation'
 
 export type VulnerabilityId = string
@@ -89,8 +89,7 @@ export class Scanner {
       )
     }
 
-    await this.github?.add_labels(issue, labels_to_add)
-
+    await this.apply_labels(issue, labels_to_add)
     return Scanner.statuses.success(vulnerabilities, recommendations)
   }
 
@@ -132,7 +131,7 @@ export class Scanner {
     }
 
     if (!this.tidelift) {
-      warn('No Tidelift client for lookup')
+      warning('No Tidelift client for lookup')
       return []
     }
 
@@ -167,6 +166,12 @@ export class Scanner {
     }
 
     return mentions
+  }
+
+  async apply_labels(issue: Issue, labels: string[]): Promise<void | {}> {
+    if (!this.config.disable_labels) {
+      return this.github?.add_labels(issue, labels)
+    }
   }
 }
 

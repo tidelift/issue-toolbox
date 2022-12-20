@@ -1,11 +1,11 @@
-import {default as axios} from 'axios'
+import {Axios, default as axios} from 'axios'
 import {TideliftRecommendation} from './tidelift_recommendation'
 import {concurrently} from './utils'
 import {VulnerabilityId} from './scanner'
 
 export class TideliftClient {
   api_key: string
-  client
+  client: Axios
 
   constructor(api_key: string) {
     this.api_key = api_key
