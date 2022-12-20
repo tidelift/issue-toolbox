@@ -233,12 +233,14 @@ class GithubClient {
             return data;
         });
     }
-    list_issues({ repo, owner }) {
+    list_issues({ repo, owner, state = 'all', sort = 'created', direction = 'desc' }) {
         return __awaiter(this, void 0, void 0, function* () {
             const { data } = yield this.octokit.rest.issues.listForRepo({
                 repo,
                 owner,
-                state: 'all'
+                state,
+                sort,
+                direction
             });
             return data;
         });
@@ -524,14 +526,22 @@ class Scanner {
                 (0, core_1.warning)('No github client for lookup');
                 return new Map();
             }
-            const issues_data = yield ((_a = this.github) === null || _a === void 0 ? void 0 : _a.list_issues({ repo, owner }));
+            const issues_data = yield ((_a = this.github) === null || _a === void 0 ? void 0 : _a.list_issues({
+                repo,
+                owner,
+                sort: 'created',
+                direction: 'asc'
+            }));
             if (!issues_data) {
                 (0, core_1.warning)('Could not check other issues on repository');
                 return new Map();
             }
             const mentions = new Map();
             for (const vuln of vulnerabilities) {
-                const issue_number = (_b = issues_data.find(({ title, body }) => this.find_cves([title, String(body)]).has(vuln))) === null || _b === void 0 ? void 0 : _b.number;
+                const issue_number = (_b = issues_data.find(({ title, body }) => __awaiter(this, void 0, void 0, function* () {
+                    const issue_vulns = yield this.find_all([title, String(body)]);
+                    return issue_vulns.has(vuln);
+                }))) === null || _b === void 0 ? void 0 : _b.number;
                 if (issue_number)
                     mentions.set(vuln, issue_number);
             }

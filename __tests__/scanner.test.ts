@@ -136,7 +136,10 @@ describe('Scanner', () => {
     test('returns []', async () => {
       const input = new Set(['CVE-2021-3807'])
 
-      const subject = await scanner.check_duplicates({owner: 'tidelift', repo: 'issue-toolbox'}, input)
+      const subject = await scanner.check_duplicates(
+        {owner: 'tidelift', repo: 'issue-toolbox'},
+        input
+      )
 
       expect(subject).toEqual(new Map([['CVE-2021-3807', 1]]))
     })
