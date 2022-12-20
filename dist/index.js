@@ -99,6 +99,10 @@ class Configuration {
             options['tidelift_api_key'] || defaults['tidelift_api_key'];
         this.ignore_if_assigned =
             options['ignore_if_assigned'] || defaults['ignore_if_assigned'];
+        this.disable_recommendations =
+            options['disable_recommendations'] || defaults['disable_recommendations'];
+        this.disable_labels =
+            options['disable_labels'] || defaults['disable_labels'];
         this.templates = options['templates'] || defaults['templates'];
     }
     static defaults() {
@@ -109,6 +113,8 @@ class Configuration {
         return {
             issue_number: (0, core_1.getInput)('issue-number'),
             ignore_if_assigned: isTruthy((0, core_1.getInput)('ignore-if-assigned')),
+            disable_recommendations: isTruthy((0, core_1.getInput)('disable-recommendations')),
+            disable_labels: isTruthy((0, core_1.getInput)('disable-labels')),
             tidelift_api_key: (0, core_1.getInput)('tidelift-api-key') || process.env.TIDELIFT_API_KEY,
             github_token,
             templates: {
@@ -414,7 +420,7 @@ const github_client_1 = __nccwpck_require__(6125);
 const core_1 = __nccwpck_require__(2186);
 class Scanner {
     constructor(options = {}) {
-        this.config = options['config'] || new configuration_1.Configuration();
+        this.config = new configuration_1.Configuration(options);
         this.github =
             options['github'] || new github_client_1.GithubClient(this.config.github_token);
         this.tidelift = options['tidelift'];
@@ -423,12 +429,11 @@ class Scanner {
         }
     }
     perform(issue) {
-        var _a;
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 issue.data = yield this.github.get_issue(issue);
             }
-            catch (_b) {
+            catch (_a) {
                 return Scanner.statuses.no_issue_data(issue.context);
             }
             if (this.config.ignore_if_assigned && issue.has_assignees) {
@@ -449,7 +454,7 @@ class Scanner {
                 labels_to_add.push(this.config.templates.possible_duplicate_label());
                 (0, comment_1.createDuplicatesCommentIfNeeded)(issue, duplicates, this.github, this.config.templates.possible_duplicate_comment);
             }
-            yield ((_a = this.github) === null || _a === void 0 ? void 0 : _a.add_labels(issue, labels_to_add));
+            yield this.apply_labels(issue, labels_to_add);
             return Scanner.statuses.success(vulnerabilities, recommendations);
         });
     }
@@ -468,7 +473,7 @@ class Scanner {
         var _a, e_1, _b, _c;
         return __awaiter(this, void 0, void 0, function* () {
             if (!this.github) {
-                (0, core_1.info)('No github client for lookup');
+                (0, core_1.warning)('No github client for lookup');
                 return new Set();
             }
             const vulnerabilities = new Set();
@@ -500,8 +505,11 @@ class Scanner {
     }
     find_recommendations(vulnerabilities) {
         return __awaiter(this, void 0, void 0, function* () {
+            if (this.config.disable_recommendations) {
+                return [];
+            }
             if (!this.tidelift) {
-                (0, core_1.info)('No Tidelift client for lookup');
+                (0, core_1.warning)('No Tidelift client for lookup');
                 return [];
             }
             return yield this.tidelift.fetch_recommendations([
@@ -513,12 +521,12 @@ class Scanner {
         var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
             if (!this.github) {
-                (0, core_1.info)('No github client for lookup');
+                (0, core_1.warning)('No github client for lookup');
                 return new Map();
             }
             const issues_data = yield ((_a = this.github) === null || _a === void 0 ? void 0 : _a.list_issues({ repo, owner }));
             if (!issues_data) {
-                (0, core_1.info)('Could not check other issues on repository');
+                (0, core_1.warning)('Could not check other issues on repository');
                 return new Map();
             }
             const mentions = new Map();
@@ -528,6 +536,14 @@ class Scanner {
                     mentions.set(vuln, issue_number);
             }
             return mentions;
+        });
+    }
+    apply_labels(issue, labels) {
+        var _a;
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!this.config.disable_labels) {
+                return (_a = this.github) === null || _a === void 0 ? void 0 : _a.add_labels(issue, labels);
+            }
         });
     }
 }
