@@ -56,15 +56,23 @@ export class GithubClient {
 
   async list_issues({
     repo,
-    owner
+    owner,
+    state = 'all',
+    sort = 'created',
+    direction = 'desc'
   }: {
     repo: string
     owner: string
+    state?: 'all' | 'open' | 'closed'
+    sort?: 'created' | 'updated' | 'comments'
+    direction?: 'asc' | 'desc'
   }): Promise<IssueData[]> {
     const {data} = await this.octokit.rest.issues.listForRepo({
       repo,
       owner,
-      state: 'all'
+      state,
+      sort,
+      direction
     })
 
     return data

@@ -149,7 +149,12 @@ export class Scanner {
       return new Map()
     }
 
-    const issues_data = await this.github?.list_issues({repo, owner})
+    const issues_data = await this.github?.list_issues({
+      repo,
+      owner,
+      sort: 'created',
+      direction: 'asc'
+    })
 
     if (!issues_data) {
       warning('Could not check other issues on repository')
@@ -157,10 +162,12 @@ export class Scanner {
     }
 
     const mentions = new Map()
+
     for (const vuln of vulnerabilities) {
-      const issue_number = issues_data.find(({title, body}) =>
-        this.find_cves([title, String(body)]).has(vuln)
-      )?.number
+      const issue_number = issues_data.find(async ({title, body}) => {
+        const issue_vulns = await this.find_all([title, String(body)])
+        return issue_vulns.has(vuln)
+      })?.number
 
       if (issue_number) mentions.set(vuln, issue_number)
     }
