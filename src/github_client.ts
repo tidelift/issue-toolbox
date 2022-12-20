@@ -9,8 +9,6 @@ export type IssueData =
   RestEndpointMethodTypes['issues']['get']['response']['data']
 export type CommentData =
   RestEndpointMethodTypes['issues']['getComment']['response']['data']
-// export type commentsData =
-//   RestEndpointMethodTypes['issues']['listComments']['response']['data']
 
 export class GithubClient {
   octokit: InstanceType<typeof GitHub>
