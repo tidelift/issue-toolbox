@@ -7,13 +7,21 @@ inputs:
     required: false
     default: ${{ github.token }}
   tidelift-api-key:
-    description: Tidelift API access
+    description: Tidelift (User) API Key
     required: false
   issue-number:
     description: Manually specify issue to scan
     required: false
   ignore-if-assigned:
     description: Skip issues that have already been assigned
+    required: false
+    default: 'false'
+  disable-recommendations:
+    description: Skip fetching recommendations from Tidelift
+    required: false
+    default: 'false'
+  disable-labels:
+    description: Skip applying labels for CVEs and status
     required: false
     default: 'false'
 runs:

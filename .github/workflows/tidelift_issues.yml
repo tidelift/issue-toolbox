@@ -13,3 +13,6 @@ jobs:
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           tidelift-api-key: ${{ secrets.TIDELIFT_API_KEY }}
+          # ignore-if-assigned: 'false'
+          # disable-recommendations: 'false'
+          # disable-labels: 'false'

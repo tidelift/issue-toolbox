@@ -17,21 +17,24 @@ Retrieve your Tidelift user API key and add it as `TIDELIFT_API_KEY` to your pro
 Add a workflow to your project.
 
 ```yaml
-# .github/workflow/issue_scanner.yml
+# .github/workflow/tidelift_issues.yml
 
-name: Tidelift Issue Scanner
+name: Tidelift Issue Toolbox
 on:
   issues:
     types: [opened, edited]
 
 jobs:
-  issue_scanner:
+  scan_issues:
     runs-on: ubuntu-latest
     steps:
-      - uses: macowie/issue_scanner_test@V1
+      - uses: tidelift/issue-toolbox@V1
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           tidelift-api-key: ${{ secrets.TIDELIFT_API_KEY }}
+          # ignore-if-assigned: 'false'
+          # disable-recommendations: 'false'
+          # disable-labels: 'false'
 ```
 
 After testing you can [create a v1 tag](https://github.com/actions/toolkit/blob/master/docs/action-versioning.md) to reference the stable and latest V1 action
