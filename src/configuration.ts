@@ -21,6 +21,8 @@ export class Configuration {
   tidelift_api_key?: string
   github_token: string
   ignore_if_assigned: boolean
+  disable_recommendations: boolean
+  disable_labels: boolean
   templates: TemplateSet
 
   constructor(options: Partial<Configuration> = {}) {
@@ -32,6 +34,10 @@ export class Configuration {
       options['tidelift_api_key'] || defaults['tidelift_api_key']
     this.ignore_if_assigned =
       options['ignore_if_assigned'] || defaults['ignore_if_assigned']
+    this.disable_recommendations =
+      options['disable_recommendations'] || defaults['disable_recommendations']
+    this.disable_labels =
+      options['disable_labels'] || defaults['disable_labels']
     this.templates = options['templates'] || defaults['templates']
   }
 
@@ -44,6 +50,8 @@ export class Configuration {
     return {
       issue_number: getInput('issue-number'),
       ignore_if_assigned: isTruthy(getInput('ignore-if-assigned')),
+      disable_recommendations: isTruthy(getInput('disable-recommendations')),
+      disable_labels: isTruthy(getInput('disable-labels')),
       tidelift_api_key:
         getInput('tidelift-api-key') || process.env.TIDELIFT_API_KEY,
       github_token,

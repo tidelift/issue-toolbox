@@ -7,7 +7,7 @@ import {
 } from './comment'
 import {TideliftClient} from './tidelift_client'
 import {GithubClient} from './github_client'
-import {info} from '@actions/core'
+import {info, warning} from '@actions/core'
 import {TideliftRecommendation} from './tidelift_recommendation'
 
 export type VulnerabilityId = string
@@ -19,8 +19,13 @@ export class Scanner {
   github: GithubClient
   tidelift?: TideliftClient
 
-  constructor(options: Partial<Scanner> = {}) {
-    this.config = options['config'] || new Configuration()
+  constructor(
+    options: Partial<Configuration> & {
+      tidelift?: TideliftClient
+      github?: GithubClient
+    } = {}
+  ) {
+    this.config = new Configuration(options)
     this.github =
       options['github'] || new GithubClient(this.config.github_token)
 
@@ -102,7 +107,7 @@ export class Scanner {
 
   async find_ghsas(fields: string[]): Promise<VulnerabilitySet> {
     if (!this.github) {
-      info('No github client for lookup')
+      warning('No github client for lookup')
       return new Set()
     }
 
@@ -122,8 +127,12 @@ export class Scanner {
   async find_recommendations(
     vulnerabilities: VulnerabilitySet
   ): Promise<TideliftRecommendation[]> {
+    if (this.config.disable_recommendations) {
+      return []
+    }
+
     if (!this.tidelift) {
-      info('No Tidelift client for lookup')
+      warn('No Tidelift client for lookup')
       return []
     }
 
@@ -137,14 +146,14 @@ export class Scanner {
     vulnerabilities: VulnerabilitySet
   ): Promise<Mentions> {
     if (!this.github) {
-      info('No github client for lookup')
+      warning('No github client for lookup')
       return new Map()
     }
 
     const issues_data = await this.github?.list_issues({repo, owner})
 
     if (!issues_data) {
-      info('Could not check other issues on repository')
+      warning('Could not check other issues on repository')
       return new Map()
     }
 

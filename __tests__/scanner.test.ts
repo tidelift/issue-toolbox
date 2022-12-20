@@ -2,6 +2,23 @@ import {expect, describe, test} from '@jest/globals'
 import {scanGhsa, scanCve, Scanner} from '../src/scanner'
 import {Configuration} from '../src/configuration'
 import {Issue} from '../src/issue'
+import {TideliftClient} from '../src/tidelift_client'
+import {TideliftRecommendation} from '../src/tidelift_recommendation'
+
+const stubTidelift = new TideliftClient('STUB')
+
+const sample_rec = new TideliftRecommendation('CVE-2021-3807', {
+  description: 'Foo',
+  severity: 10,
+  impact_description: 'no',
+  impact_score: 10,
+  workaround_available: false,
+  recommendation_created_at: new Date(),
+  recommendation_updated_at: new Date(),
+  other_conditions: false,
+  specific_methods_affected: false,
+  real_issue: true
+})
 
 const scanner = new Scanner()
 scanner.github.add_comment = jest.fn()
@@ -71,6 +88,47 @@ describe('Scanner', () => {
       const subject = await scanner.find_all(input)
 
       expect(subject.size).toBe(1)
+    })
+  })
+
+  describe('find_recommendations', () => {
+    describe('when disabled', () => {
+      test('returns []', async () => {
+        const input = new Set(['CVE-5555-1234'])
+        const subject = await new Scanner({
+          disable_recommendations: true
+        }).find_recommendations(input)
+
+        expect(subject).toEqual([])
+      })
+    })
+
+    describe('when no tidelift client', () => {
+      test('returns []', async () => {
+        const input = new Set(['CVE-5555-1234'])
+        const subject = await new Scanner({
+          tidelift: undefined
+        }).find_recommendations(input)
+
+        expect(subject).toEqual([])
+      })
+    })
+
+    describe('when has rec', () => {
+      test('returns []', async () => {
+        stubTidelift.fetch_recommendations = jest
+          .fn()
+          .mockImplementationOnce(vulns => [sample_rec])
+
+        const input = new Set(['CVE-2021-3807'])
+        const subject = await new Scanner({
+          tidelift: stubTidelift
+        }).find_recommendations(input)
+
+        expect(stubTidelift.fetch_recommendations).toHaveBeenCalledWith([
+          ...input.values()
+        ])
+      })
     })
   })
 })
