@@ -193,8 +193,6 @@ var __rest = (this && this.__rest) || function (s, e) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.GithubClient = void 0;
 const github_1 = __nccwpck_require__(5438);
-// export type commentsData =
-//   RestEndpointMethodTypes['issues']['listComments']['response']['data']
 class GithubClient {
     constructor(token) {
         this.octokit = (0, github_1.getOctokit)(token);
