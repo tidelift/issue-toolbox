@@ -1,5 +1,3 @@
-import {VulnerabilityId} from './scanner'
-
 type RecommendationData = {
   created_at: Date
   updated_at: Date

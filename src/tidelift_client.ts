@@ -1,5 +1,4 @@
 import {Axios, default as axios} from 'axios'
-import {TideliftRecommendation} from './tidelift_recommendation'
 import {Vulnerability} from './vulnerability'
 import {concurrently} from './utils'
 import {VulnerabilityId} from './scanner'
@@ -26,9 +25,7 @@ export class TideliftClient {
   async fetch_vulnerability(
     vuln: VulnerabilityId
   ): Promise<Vulnerability | undefined> {
-    const response = await this.client.get(
-      `/vulnerabilities/${vuln}`
-    )
+    const response = await this.client.get(`/vulnerabilities/${vuln}`)
 
     if (response.status === 404) {
       return

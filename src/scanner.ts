@@ -40,7 +40,7 @@ export class Scanner {
     ignored_assigned: () =>
       `No action being taken. Ignoring because one or more assignees have been added to the issue`,
     no_vulnerabilities: () => 'Did not find any vulnerabilities mentioned',
-    success: (vulns) =>
+    success: vulns =>
       `Detected mentions of: ${[...vulns]}
        With recommendations on: ${vulns.map(v => v.vuln_id)}`
   }
@@ -90,11 +90,10 @@ export class Scanner {
     }
 
     await this.apply_labels(issue, labels_to_add)
-    
-    const vulnsWithRecs = vulnerabilities
-      .filter(v => !v.recommendation)
-    
-    return Scanner.statuses.success(vulnsWithRecs)
+
+    const vulns_with_recs = vulnerabilities.filter(v => !v.recommendation)
+
+    return Scanner.statuses.success(vulns_with_recs)
   }
 
   async find_all(fields: string[]): Promise<VulnerabilityIdSet> {
