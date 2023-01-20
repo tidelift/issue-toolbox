@@ -8,10 +8,10 @@ import {
 import {TideliftClient} from './tidelift_client'
 import {GithubClient} from './github_client'
 import {warning} from '@actions/core'
-import {TideliftRecommendation} from './tidelift_recommendation'
+import {Vulnerability} from './vulnerability'
 
 export type VulnerabilityId = string
-export type VulnerabilitySet = Set<VulnerabilityId>
+export type VulnerabilityIdSet = Set<VulnerabilityId>
 export type Mentions = Map<VulnerabilityId, number>
 
 export class Scanner {
@@ -40,9 +40,11 @@ export class Scanner {
     ignored_assigned: () =>
       `No action being taken. Ignoring because one or more assignees have been added to the issue`,
     no_vulnerabilities: () => 'Did not find any vulnerabilities mentioned',
-    success: (vulns, recs) =>
-      `Detected mentions of: ${[...vulns]}
-       With recommendations on: ${recs.map(r => r.vulnerability)}`
+    success: vulns =>
+      `Detected mentions of: ${[...vulns.map(v => v.vuln_id)]}
+       With recommendations on: ${vulns
+         .filter(v => v.recommendation)
+         .map(v => v.vuln_id)}`
   }
 
   async perform(issue: Issue): Promise<string> {
@@ -56,23 +58,26 @@ export class Scanner {
       return Scanner.statuses.ignored_assigned()
     }
 
-    const vulnerabilities = await this.find_all(issue.searchable_text)
-    const recommendations = await this.find_recommendations(vulnerabilities)
-    const duplicates = await this.check_duplicates(issue, vulnerabilities)
+    const vuln_ids = await this.find_all(issue.searchable_text)
+    const vulnerabilities = await this.find_vulnerabilities(vuln_ids)
+    const vulnerabilities_with_recs = vulnerabilities.filter(
+      v => v.recommendation
+    )
+    const duplicates = await this.check_duplicates(issue, vuln_ids)
 
-    if (vulnerabilities.size === 0) {
+    if (vulnerabilities.length === 0) {
       return Scanner.statuses.no_vulnerabilities()
     }
     const labels_to_add = [...vulnerabilities.values()].map(vuln =>
-      this.config.templates.vuln_label(vuln)
+      this.config.templates.vuln_label(vuln.vuln_id)
     )
 
-    if (recommendations.length > 0) {
+    if (vulnerabilities_with_recs.length > 0) {
       labels_to_add.push(this.config.templates.has_recommendation_label())
 
       createRecommendationsCommentIfNeeded(
         issue,
-        recommendations,
+        vulnerabilities_with_recs,
         this.github,
         this.config.templates.recommendation_comment
       )
@@ -90,21 +95,22 @@ export class Scanner {
     }
 
     await this.apply_labels(issue, labels_to_add)
-    return Scanner.statuses.success(vulnerabilities, recommendations)
+
+    return Scanner.statuses.success(vulnerabilities)
   }
 
-  async find_all(fields: string[]): Promise<VulnerabilitySet> {
+  async find_all(fields: string[]): Promise<VulnerabilityIdSet> {
     return new Set([
       ...this.find_cves(fields),
       ...(await this.find_ghsas(fields))
     ])
   }
 
-  find_cves(fields: string[]): VulnerabilitySet {
+  find_cves(fields: string[]): VulnerabilityIdSet {
     return new Set(fields.flatMap(scanCve))
   }
 
-  async find_ghsas(fields: string[]): Promise<VulnerabilitySet> {
+  async find_ghsas(fields: string[]): Promise<VulnerabilityIdSet> {
     if (!this.github) {
       warning('No github client for lookup')
       return new Set()
@@ -123,9 +129,9 @@ export class Scanner {
     return vulnerabilities
   }
 
-  async find_recommendations(
-    vulnerabilities: VulnerabilitySet
-  ): Promise<TideliftRecommendation[]> {
+  async find_vulnerabilities(
+    vulnerabilities: VulnerabilityIdSet
+  ): Promise<Vulnerability[]> {
     if (this.config.disable_recommendations) {
       return []
     }
@@ -135,14 +141,14 @@ export class Scanner {
       return []
     }
 
-    return await this.tidelift.fetch_recommendations([
+    return await this.tidelift.fetch_vulnerabilities([
       ...vulnerabilities.values()
     ])
   }
 
   async check_duplicates(
     {repo, owner}: Pick<Issue, 'repo' | 'owner'>,
-    vulnerabilities: VulnerabilitySet
+    vulnerabilities: VulnerabilityIdSet
   ): Promise<Mentions> {
     if (!this.github) {
       warning('No github client for lookup')

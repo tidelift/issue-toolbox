@@ -17,15 +17,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.createDuplicatesCommentIfNeeded = exports.createRecommendationsCommentIfNeeded = void 0;
-function createRecommendationsCommentIfNeeded(issue, recs, github, template) {
+function createRecommendationsCommentIfNeeded(issue, vulns, github, template) {
     return __awaiter(this, void 0, void 0, function* () {
         const comments = yield github.list_comments(issue);
         if (!comments)
             return;
         const bot_comments = comments.filter(isBotComment);
-        const unmentioned_recs = [...recs].filter(rec => !bot_comments.some(commentIncludesText, rec.vulnerability));
-        if (unmentioned_recs.length > 0)
-            return github.add_comment(issue, unmentioned_recs.map(rec => template(rec)).join('\n---\n'));
+        const unmentioned_vulns = [...vulns].filter(vuln => !bot_comments.some(commentIncludesText, vuln.vuln_id));
+        if (unmentioned_vulns.length > 0)
+            return github.add_comment(issue, unmentioned_vulns.map(vuln => template(vuln)).join('\n---\n'));
     });
 }
 exports.createRecommendationsCommentIfNeeded = createRecommendationsCommentIfNeeded;
@@ -138,25 +138,26 @@ function formatPossibleDuplicateLabel() {
     return `:large_blue_circle: possible-duplicate`;
 }
 //TODO: Add unaffected releases when available from API
-function formatRecommendationComment(recommendation) {
-    return `:wave: It looks like you are talking about *${recommendation.vulnerability}*.  The maintainer has provided more information to help you handle this CVE.
+function formatRecommendationComment(vulnerability) {
+    var _a, _b, _c, _d, _e, _f;
+    return `:wave: It looks like you are talking about *${vulnerability.vuln_id}*.  The maintainer has provided more information to help you handle this CVE.
 
-> Is this a real issue with this project? *${recommendation.real_issue}*
+> Is this a real issue with this project? *${(_a = vulnerability.recommendation) === null || _a === void 0 ? void 0 : _a.real_issue}*
 
-${recommendation.false_positive_reason}
+${(_b = vulnerability.recommendation) === null || _b === void 0 ? void 0 : _b.false_positive_reason}
 
-> How likely are you impacted (out of 10)? *${recommendation.impact_score}*
+> How likely are you impacted (out of 10)? *${(_c = vulnerability.recommendation) === null || _c === void 0 ? void 0 : _c.impact_score}*
 
-${recommendation.impact_description}
+${(_d = vulnerability.recommendation) === null || _d === void 0 ? void 0 : _d.impact_description}
 
-> Is there a workaround available? *${recommendation.workaround_available}*
+> Is there a workaround available? *${(_e = vulnerability.recommendation) === null || _e === void 0 ? void 0 : _e.workaround_available}*
 
-${recommendation.workaround_description}
+${(_f = vulnerability.recommendation) === null || _f === void 0 ? void 0 : _f.workaround_description}
 
 Data provided by [Tidelift](https://tidelift.com), in partnership with the maintainer of this project`;
 }
-function formatPossibleDuplicateComment(vuln, issue_number) {
-    return `An issue referencing *${vuln}* was first filed in #${issue_number}. If your issue is different from this, please let us know.`;
+function formatPossibleDuplicateComment(vuln_id, issue_number) {
+    return `An issue referencing *${vuln_id}* was first filed in #${issue_number}. If your issue is different from this, please let us know.`;
 }
 function isTruthy(val) {
     return ['true', 't', 'yes'].includes(String(val).toLowerCase());
@@ -439,23 +440,24 @@ class Scanner {
             if (this.config.ignore_if_assigned && issue.has_assignees) {
                 return Scanner.statuses.ignored_assigned();
             }
-            const vulnerabilities = yield this.find_all(issue.searchable_text);
-            const recommendations = yield this.find_recommendations(vulnerabilities);
-            const duplicates = yield this.check_duplicates(issue, vulnerabilities);
-            if (vulnerabilities.size === 0) {
+            const vuln_ids = yield this.find_all(issue.searchable_text);
+            const vulnerabilities = yield this.find_vulnerabilities(vuln_ids);
+            const vulnerabilities_with_recs = vulnerabilities.filter(v => v.recommendation);
+            const duplicates = yield this.check_duplicates(issue, vuln_ids);
+            if (vulnerabilities.length === 0) {
                 return Scanner.statuses.no_vulnerabilities();
             }
-            const labels_to_add = [...vulnerabilities.values()].map(vuln => this.config.templates.vuln_label(vuln));
-            if (recommendations.length > 0) {
+            const labels_to_add = [...vulnerabilities.values()].map(vuln => this.config.templates.vuln_label(vuln.vuln_id));
+            if (vulnerabilities_with_recs.length > 0) {
                 labels_to_add.push(this.config.templates.has_recommendation_label());
-                (0, comment_1.createRecommendationsCommentIfNeeded)(issue, recommendations, this.github, this.config.templates.recommendation_comment);
+                (0, comment_1.createRecommendationsCommentIfNeeded)(issue, vulnerabilities_with_recs, this.github, this.config.templates.recommendation_comment);
             }
             if (duplicates.size > 0) {
                 labels_to_add.push(this.config.templates.possible_duplicate_label());
                 (0, comment_1.createDuplicatesCommentIfNeeded)(issue, duplicates, this.github, this.config.templates.possible_duplicate_comment);
             }
             yield this.apply_labels(issue, labels_to_add);
-            return Scanner.statuses.success(vulnerabilities, recommendations);
+            return Scanner.statuses.success(vulnerabilities);
         });
     }
     find_all(fields) {
@@ -503,7 +505,7 @@ class Scanner {
             return vulnerabilities;
         });
     }
-    find_recommendations(vulnerabilities) {
+    find_vulnerabilities(vulnerabilities) {
         return __awaiter(this, void 0, void 0, function* () {
             if (this.config.disable_recommendations) {
                 return [];
@@ -512,7 +514,7 @@ class Scanner {
                 (0, core_1.warning)('No Tidelift client for lookup');
                 return [];
             }
-            return yield this.tidelift.fetch_recommendations([
+            return yield this.tidelift.fetch_vulnerabilities([
                 ...vulnerabilities.values()
             ]);
         });
@@ -560,8 +562,10 @@ Scanner.statuses = {
     no_issue_data: context => `Could not get issue data for ${context}`,
     ignored_assigned: () => `No action being taken. Ignoring because one or more assignees have been added to the issue`,
     no_vulnerabilities: () => 'Did not find any vulnerabilities mentioned',
-    success: (vulns, recs) => `Detected mentions of: ${[...vulns]}
-       With recommendations on: ${recs.map(r => r.vulnerability)}`
+    success: vulns => `Detected mentions of: ${[...vulns.map(v => v.vuln_id)]}
+       With recommendations on: ${vulns
+        .filter(v => v.recommendation)
+        .map(v => v.vuln_id)}`
 };
 function scanGhsa(text) {
     const regex = /GHSA-\w{4}-\w{4}-\w{4}/gi;
@@ -599,7 +603,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.TideliftClient = void 0;
 const axios_1 = __importDefault(__nccwpck_require__(8757));
-const tidelift_recommendation_1 = __nccwpck_require__(6190);
+const vulnerability_1 = __nccwpck_require__(4819);
 const utils_1 = __nccwpck_require__(918);
 class TideliftClient {
     constructor(api_key) {
@@ -614,18 +618,18 @@ class TideliftClient {
         });
         /* eslint-enable @typescript-eslint/naming-convention */ //
     }
-    fetch_recommendation(vuln) {
+    fetch_vulnerability(vuln) {
         return __awaiter(this, void 0, void 0, function* () {
-            const response = yield this.client.get(`/vulnerability/${vuln}/recommendation`);
+            const response = yield this.client.get(`/vulnerabilities/${vuln}`);
             if (response.status === 404) {
                 return;
             }
-            return new tidelift_recommendation_1.TideliftRecommendation(vuln, response.data);
+            return new vulnerability_1.Vulnerability(vuln, response.data);
         });
     }
-    fetch_recommendations(vulns) {
+    fetch_vulnerabilities(vulns) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield (0, utils_1.concurrently)(vulns, (vuln) => __awaiter(this, void 0, void 0, function* () { return this.fetch_recommendation(vuln); }));
+            return yield (0, utils_1.concurrently)(vulns, (vuln) => __awaiter(this, void 0, void 0, function* () { return this.fetch_vulnerability(vuln); }));
         });
     }
 }
@@ -642,12 +646,9 @@ exports.TideliftClient = TideliftClient;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.TideliftRecommendation = void 0;
 class TideliftRecommendation {
-    constructor(vulnerability, data) {
-        this.vulnerability = vulnerability;
-        this.description = data['description'];
-        this.severity = data['severity'];
-        this.recommendation_created_at = data['recommendation_created_at'];
-        this.recommendation_updated_at = data['recommendation_updated_at'];
+    constructor(data) {
+        this.created_at = data['created_at'];
+        this.updated_at = data['updated_at'];
         this.impact_score = data['impact_score'];
         this.impact_description = data['impact_description'];
         this.other_conditions = data['other_conditions'];
@@ -700,6 +701,34 @@ function concurrently(array, func) {
     });
 }
 exports.concurrently = concurrently;
+
+
+/***/ }),
+
+/***/ 4819:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.Vulnerability = void 0;
+const tidelift_recommendation_1 = __nccwpck_require__(6190);
+class Vulnerability {
+    constructor(vuln_id, data) {
+        this.vuln_id = vuln_id;
+        this.description = data['description'];
+        this.severity = data['severity'];
+        this.url = data['url'];
+        this.nist_url = data['nist_url'];
+        if (data['recommendation']) {
+            this.recommendation = new tidelift_recommendation_1.TideliftRecommendation(data['recommendation']);
+        }
+        else {
+            this.recommendation = null;
+        }
+    }
+}
+exports.Vulnerability = Vulnerability;
 
 
 /***/ }),

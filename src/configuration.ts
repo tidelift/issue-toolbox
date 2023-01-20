@@ -1,5 +1,5 @@
 import {getInput} from '@actions/core'
-import {TideliftRecommendation} from './tidelift_recommendation'
+import {Vulnerability} from './vulnerability'
 import * as dotenv from 'dotenv'
 import {PossibleIssueNumber} from './issue'
 import {VulnerabilityId} from './scanner'
@@ -7,11 +7,11 @@ dotenv.config()
 
 type TemplateSet = {
   vuln_label: (vuln_id: string) => string
-  recommendation_comment: (rec: TideliftRecommendation) => string
+  recommendation_comment: (vuln: Vulnerability) => string
   has_recommendation_label: () => string
   possible_duplicate_label: () => string
   possible_duplicate_comment: (
-    vuln: VulnerabilityId,
+    vuln_id: VulnerabilityId,
     issue_number: string | number
   ) => string
 }
@@ -79,31 +79,29 @@ function formatPossibleDuplicateLabel(): string {
 }
 
 //TODO: Add unaffected releases when available from API
-function formatRecommendationComment(
-  recommendation: TideliftRecommendation
-): string {
-  return `:wave: It looks like you are talking about *${recommendation.vulnerability}*.  The maintainer has provided more information to help you handle this CVE.
+function formatRecommendationComment(vulnerability: Vulnerability): string {
+  return `:wave: It looks like you are talking about *${vulnerability.vuln_id}*.  The maintainer has provided more information to help you handle this CVE.
 
-> Is this a real issue with this project? *${recommendation.real_issue}*
+> Is this a real issue with this project? *${vulnerability.recommendation?.real_issue}*
 
-${recommendation.false_positive_reason}
+${vulnerability.recommendation?.false_positive_reason}
 
-> How likely are you impacted (out of 10)? *${recommendation.impact_score}*
+> How likely are you impacted (out of 10)? *${vulnerability.recommendation?.impact_score}*
 
-${recommendation.impact_description}
+${vulnerability.recommendation?.impact_description}
 
-> Is there a workaround available? *${recommendation.workaround_available}*
+> Is there a workaround available? *${vulnerability.recommendation?.workaround_available}*
 
-${recommendation.workaround_description}
+${vulnerability.recommendation?.workaround_description}
 
 Data provided by [Tidelift](https://tidelift.com), in partnership with the maintainer of this project`
 }
 
 function formatPossibleDuplicateComment(
-  vuln: string,
+  vuln_id: string,
   issue_number: string | number
 ): string {
-  return `An issue referencing *${vuln}* was first filed in #${issue_number}. If your issue is different from this, please let us know.`
+  return `An issue referencing *${vuln_id}* was first filed in #${issue_number}. If your issue is different from this, please let us know.`
 }
 
 function isTruthy(val): boolean {
