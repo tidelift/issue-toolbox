@@ -56,7 +56,6 @@ describe('Scanner', () => {
     })
     let subject = await scanner.perform(issue)
 
-    window.console.log("scucess is ", subject)
     // This CVE exists but currently has no recs
     expect(subject).toContain('CVE-2021-43297')
   })
