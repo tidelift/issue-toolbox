@@ -1,6 +1,6 @@
 {
   "name": "tidelift-issue-toolbox",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": false,
   "description": "Tidelift Issue Toolbox for Github",
   "main": "lib/main.js",
