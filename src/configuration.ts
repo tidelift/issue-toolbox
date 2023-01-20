@@ -7,7 +7,7 @@ dotenv.config()
 
 type TemplateSet = {
   vuln_label: (vuln_id: string) => string
-  recommendation_comment: (rec: Vulnerability) => string
+  recommendation_comment: (vuln: Vulnerability) => string
   has_recommendation_label: () => string
   possible_duplicate_label: () => string
   possible_duplicate_comment: (
@@ -80,6 +80,7 @@ function formatPossibleDuplicateLabel(): string {
 
 //TODO: Add unaffected releases when available from API
 function formatRecommendationComment(vulnerability: Vulnerability): string {
+  console.log("formatRecommendationComment: ", vulnerability)
   return `:wave: It looks like you are talking about *${vulnerability.vuln_id}*.  The maintainer has provided more information to help you handle this CVE.
 
 > Is this a real issue with this project? *${vulnerability.recommendation?.real_issue}*

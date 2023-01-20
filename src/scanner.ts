@@ -58,6 +58,7 @@ export class Scanner {
 
     const vuln_ids = await this.find_all(issue.searchable_text)
     const vulnerabilities = await this.find_vulnerabilities(vuln_ids)
+    const vulnerabilities_with_recs = vulnerabilities.filter(v => !v.recommendation)
     const duplicates = await this.check_duplicates(issue, vuln_ids)
 
     if (vulnerabilities.length === 0) {
@@ -67,12 +68,13 @@ export class Scanner {
       this.config.templates.vuln_label(vuln.vuln_id)
     )
 
-    if (vulnerabilities.length > 0) {
+    console.log("perform: ", vulnerabilities, vulnerabilities_with_recs)
+    if (vulnerabilities_with_recs.length > 0) {
       labels_to_add.push(this.config.templates.has_recommendation_label())
 
       createRecommendationsCommentIfNeeded(
         issue,
-        vulnerabilities,
+        vulnerabilities_with_recs,
         this.github,
         this.config.templates.recommendation_comment
       )
