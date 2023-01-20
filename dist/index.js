@@ -616,7 +616,8 @@ class TideliftClient {
     }
     fetch_recommendation(vuln) {
         return __awaiter(this, void 0, void 0, function* () {
-            const response = yield this.client.get(`/vulnerability/${vuln}/recommendation`);
+            const response = yield this.client.get(`/vulnerabilities/${vuln}`);
+            console.log("Response is ", response.status, response.data)
             if (response.status === 404) {
                 return;
             }
@@ -646,8 +647,8 @@ class TideliftRecommendation {
         this.vulnerability = vulnerability;
         this.description = data['description'];
         this.severity = data['severity'];
-        this.recommendation_created_at = data['recommendation_created_at'];
-        this.recommendation_updated_at = data['recommendation_updated_at'];
+        this.created_at = data['created_at'];
+        this.updated_at = data['updated_at'];
         this.impact_score = data['impact_score'];
         this.impact_description = data['impact_description'];
         this.other_conditions = data['other_conditions'];

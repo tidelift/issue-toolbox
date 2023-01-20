@@ -1,5 +1,6 @@
 import {Axios, default as axios} from 'axios'
 import {TideliftRecommendation} from './tidelift_recommendation'
+import {Vulnerability} from './vulnerability'
 import {concurrently} from './utils'
 import {VulnerabilityId} from './scanner'
 
@@ -22,25 +23,25 @@ export class TideliftClient {
     /* eslint-enable @typescript-eslint/naming-convention */ //
   }
 
-  async fetch_recommendation(
+  async fetch_vulnerability(
     vuln: VulnerabilityId
-  ): Promise<TideliftRecommendation | undefined> {
+  ): Promise<Vulnerability | undefined> {
     const response = await this.client.get(
-      `/vulnerability/${vuln}/recommendation`
+      `/vulnerabilities/${vuln}`
     )
 
     if (response.status === 404) {
       return
     }
 
-    return new TideliftRecommendation(vuln, response.data)
+    return new Vulnerability(vuln, response.data)
   }
 
-  async fetch_recommendations(
+  async fetch_vulnerabilities(
     vulns: VulnerabilityId[]
-  ): Promise<TideliftRecommendation[]> {
+  ): Promise<Vulnerability[]> {
     return await concurrently(vulns, async vuln =>
-      this.fetch_recommendation(vuln)
+      this.fetch_vulnerability(vuln)
     )
   }
 }

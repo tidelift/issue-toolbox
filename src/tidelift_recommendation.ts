@@ -1,10 +1,8 @@
 import {VulnerabilityId} from './scanner'
 
 type RecommendationData = {
-  description: string
-  severity: number
-  recommendation_created_at: Date
-  recommendation_updated_at: Date
+  created_at: Date
+  updated_at: Date
   impact_score: number
   impact_description: string
   other_conditions: boolean
@@ -18,11 +16,8 @@ type RecommendationData = {
 }
 
 export class TideliftRecommendation implements RecommendationData {
-  vulnerability: VulnerabilityId
-  description: string
-  severity: number
-  recommendation_created_at: Date
-  recommendation_updated_at: Date
+  created_at: Date
+  updated_at: Date
   impact_score: number
   impact_description: string
   other_conditions: boolean
@@ -34,12 +29,9 @@ export class TideliftRecommendation implements RecommendationData {
   real_issue: boolean
   false_positive_reason?: string
 
-  constructor(vulnerability: VulnerabilityId, data: RecommendationData) {
-    this.vulnerability = vulnerability
-    this.description = data['description']
-    this.severity = data['severity']
-    this.recommendation_created_at = data['recommendation_created_at']
-    this.recommendation_updated_at = data['recommendation_updated_at']
+  constructor(data: RecommendationData) {
+    this.created_at = data['created_at']
+    this.updated_at = data['updated_at']
     this.impact_score = data['impact_score']
     this.impact_description = data['impact_description']
     this.other_conditions = data['other_conditions']

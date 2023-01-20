@@ -1,26 +1,26 @@
-import {TideliftRecommendation} from './tidelift_recommendation'
+import {Vulnerability} from './vulnerability'
 import {Issue} from './issue'
 import {CommentData, GithubClient} from './github_client'
 import {VulnerabilityId, Mentions} from './scanner'
 
 export async function createRecommendationsCommentIfNeeded(
   issue: Issue,
-  recs: TideliftRecommendation[],
+  vulns: Vulnerability[],
   github: GithubClient,
-  template: (r: TideliftRecommendation) => string
+  template: (v: Vulnerability) => string
 ): Promise<{} | undefined> {
   const comments = await github.list_comments(issue)
   if (!comments) return
 
   const bot_comments = comments.filter(isBotComment)
-  const unmentioned_recs = [...recs].filter(
-    rec => !bot_comments.some(commentIncludesText, rec.vulnerability)
+  const unmentioned_vulns = [...vulns].filter(
+    vuln => !bot_comments.some(commentIncludesText, vuln.vuln_id)
   )
 
-  if (unmentioned_recs.length > 0)
+  if (unmentioned_vulns.length > 0)
     return github.add_comment(
       issue,
-      unmentioned_recs.map(rec => template(rec)).join('\n---\n')
+      unmentioned_vulns.map(vuln => template(vuln)).join('\n---\n')
     )
 }
 

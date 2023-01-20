@@ -3,21 +3,25 @@ import {scanGhsa, scanCve, Scanner} from '../src/scanner'
 import {Configuration} from '../src/configuration'
 import {Issue} from '../src/issue'
 import {TideliftClient} from '../src/tidelift_client'
-import {TideliftRecommendation} from '../src/tidelift_recommendation'
+import {Vulnerability} from '../src/vulnerability'
 
 const stubTidelift = new TideliftClient('STUB')
 
-const sample_rec = new TideliftRecommendation('CVE-2021-3807', {
+const sample_rec = new Vulnerability('CVE-2021-3807', {
   description: 'Foo',
   severity: 10,
-  impact_description: 'no',
-  impact_score: 10,
-  workaround_available: false,
-  recommendation_created_at: new Date(),
-  recommendation_updated_at: new Date(),
-  other_conditions: false,
-  specific_methods_affected: false,
-  real_issue: true
+  url: 'https://a.url',
+  nist_url: 'https://nvd.nist.gov/vuln/detail/CVE-2021-3807',
+  recommendation: {
+    impact_description: 'no',
+    impact_score: 10,
+    workaround_available: false,
+    created_at: new Date(),
+    updated_at: new Date(),
+    other_conditions: false,
+    specific_methods_affected: false,
+    real_issue: true
+  }
 })
 
 const scanner = new Scanner()
@@ -91,13 +95,13 @@ describe('Scanner', () => {
     })
   })
 
-  describe('find_recommendations', () => {
+  describe('find_vulnerabilities', () => {
     describe('when disabled', () => {
       test('returns []', async () => {
         const input = new Set(['CVE-5555-1234'])
         const subject = await new Scanner({
           disable_recommendations: true
-        }).find_recommendations(input)
+        }).find_vulnerabilities(input)
 
         expect(subject).toEqual([])
       })
@@ -108,7 +112,7 @@ describe('Scanner', () => {
         const input = new Set(['CVE-5555-1234'])
         const subject = await new Scanner({
           tidelift: undefined
-        }).find_recommendations(input)
+        }).find_vulnerabilities(input)
 
         expect(subject).toEqual([])
       })
@@ -116,16 +120,16 @@ describe('Scanner', () => {
 
     describe('when has rec', () => {
       test('returns []', async () => {
-        stubTidelift.fetch_recommendations = jest
+        stubTidelift.fetch_vulnerabilities = jest
           .fn()
           .mockImplementationOnce(vulns => [sample_rec])
 
         const input = new Set(['CVE-2021-3807'])
         const subject = await new Scanner({
           tidelift: stubTidelift
-        }).find_recommendations(input)
+        }).find_vulnerabilities(input)
 
-        expect(stubTidelift.fetch_recommendations).toHaveBeenCalledWith([
+        expect(stubTidelift.fetch_vulnerabilities).toHaveBeenCalledWith([
           ...input.values()
         ])
       })
