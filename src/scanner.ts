@@ -40,9 +40,11 @@ export class Scanner {
     ignored_assigned: () =>
       `No action being taken. Ignoring because one or more assignees have been added to the issue`,
     no_vulnerabilities: () => 'Did not find any vulnerabilities mentioned',
-    success: vulns => 
+    success: vulns =>
       `Detected mentions of: ${[...vulns.map(v => v.vuln_id)]}
-       With recommendations on: ${vulns.filter(v => v.recommendation).map(v => v.vuln_id)}`
+       With recommendations on: ${vulns
+         .filter(v => v.recommendation)
+         .map(v => v.vuln_id)}`
   }
 
   async perform(issue: Issue): Promise<string> {
@@ -58,7 +60,9 @@ export class Scanner {
 
     const vuln_ids = await this.find_all(issue.searchable_text)
     const vulnerabilities = await this.find_vulnerabilities(vuln_ids)
-    const vulnerabilities_with_recs = vulnerabilities.filter(v => v.recommendation)
+    const vulnerabilities_with_recs = vulnerabilities.filter(
+      v => v.recommendation
+    )
     const duplicates = await this.check_duplicates(issue, vuln_ids)
 
     if (vulnerabilities.length === 0) {
