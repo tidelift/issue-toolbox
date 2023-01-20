@@ -40,9 +40,9 @@ export class Scanner {
     ignored_assigned: () =>
       `No action being taken. Ignoring because one or more assignees have been added to the issue`,
     no_vulnerabilities: () => 'Did not find any vulnerabilities mentioned',
-    success: vulns =>
-      `Detected mentions of: ${[...vulns]}
-       With recommendations on: ${vulns.map(v => v.vuln_id)}`
+    success: vulns => 
+      `Detected mentions of: ${[...vulns.map(v => v.vuln_id)]}
+       With recommendations on: ${vulns.filter(v => v.recommendation).map(v => v.vuln_id)}`
   }
 
   async perform(issue: Issue): Promise<string> {
@@ -58,18 +58,23 @@ export class Scanner {
 
     const vuln_ids = await this.find_all(issue.searchable_text)
     const vulnerabilities = await this.find_vulnerabilities(vuln_ids)
-    const vulnerabilities_with_recs = vulnerabilities.filter(v => !v.recommendation)
+    const vulnerabilities_with_recs = vulnerabilities.filter(v => v.recommendation)
     const duplicates = await this.check_duplicates(issue, vuln_ids)
+    window.console.log("perform 1: ", vulnerabilities.length)
+    window.console.log("perform 2: ", vulnerabilities_with_recs.length)
+    window.console.log("perform 3: ", duplicates)
 
     if (vulnerabilities.length === 0) {
       return Scanner.statuses.no_vulnerabilities()
     }
+    window.console.log("perform 4 ")
     const labels_to_add = [...vulnerabilities.values()].map(vuln =>
       this.config.templates.vuln_label(vuln.vuln_id)
     )
+    window.console.log("perform 5 ", labels_to_add)
 
-    console.log("perform: ", vulnerabilities, vulnerabilities_with_recs)
     if (vulnerabilities_with_recs.length > 0) {
+      window.console.log("perform 6 ", vulnerabilities_with_recs)
       labels_to_add.push(this.config.templates.has_recommendation_label())
 
       createRecommendationsCommentIfNeeded(
@@ -79,8 +84,10 @@ export class Scanner {
         this.config.templates.recommendation_comment
       )
     }
+    window.console.log("perform 7 ")
 
     if (duplicates.size > 0) {
+      window.console.log("perform 8 ", duplicates)
       labels_to_add.push(this.config.templates.possible_duplicate_label())
 
       createDuplicatesCommentIfNeeded(
@@ -92,10 +99,9 @@ export class Scanner {
     }
 
     await this.apply_labels(issue, labels_to_add)
+    window.console.log("perform 9 ")
 
-    const vulns_with_recs = vulnerabilities.filter(v => !v.recommendation)
-
-    return Scanner.statuses.success(vulns_with_recs)
+    return Scanner.statuses.success(vulnerabilities)
   }
 
   async find_all(fields: string[]): Promise<VulnerabilityIdSet> {

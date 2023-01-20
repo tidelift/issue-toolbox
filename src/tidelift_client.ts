@@ -26,7 +26,7 @@ export class TideliftClient {
     vuln: VulnerabilityId
   ): Promise<Vulnerability | undefined> {
     const response = await this.client.get(`/vulnerabilities/${vuln}`)
-
+    window.console.log('fetch_vulnerability response: ', response.status, response.data)
     if (response.status === 404) {
       return
     }
